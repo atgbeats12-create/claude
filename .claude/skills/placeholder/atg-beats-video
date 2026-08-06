@@ -1,0 +1,228 @@
+---
+name: atg-beats-video
+description: >
+  Production pipeline for ATG Beats vertical shorts teaching independent
+  artists about music visuals, release rollout and AI video. Voiceover is
+  broken into visual beats, those beats become one 12-panel storyboard image
+  in Google Flow, and each storyboard row is then animated as one continuous
+  clip — host silent with a phone in hand showing real app screens, ElevenLabs
+  voiceover over the top, live speech only on the closing CTA. Use whenever
+  Makari asks for a new ATG Beats video, short, reel or TikTok — "make a video
+  about X", "let's do one on rollout", "new ATG Beats content" — and when he
+  asks for just a piece: a script, storyboard, voiceover, row animation,
+  captions or a re-render. Always check this before touching Flow, ElevenLabs
+  or ffmpeg for ATG Beats — it encodes the beats-first method, the locked
+  character and phone-mockup look, the conversion framework, and hard-won Flow
+  workarounds that cost real credits to rediscover.
+---
+
+# ATG Beats Video Pipeline
+
+Vertical 9:16 shorts. The host is silent through the teaching, holding a phone
+toward camera whose screen demonstrates exactly what the voiceover is saying.
+An ElevenLabs voiceover carries the lesson. Only the closing CTA is spoken
+aloud on camera. The ATG Beats logo lands the ending.
+
+The thing that makes these work is that **the visual explains the spoken line**
+— not the mood of it. That's the whole method, and it's why the storyboard
+comes before any animation prompt.
+
+## What we're optimising for
+
+Conversions, not views. The reference data: the best video by views (5K+)
+produced zero clients; a 669-view video produced two real clients. When a
+choice trades reach for clarity of offer, take clarity.
+
+Three consequences that shape every video:
+
+- **Hooks use micro-result + "without."** Name one small specific result and
+  the outdated thing people already tried and failed at. "5 release videos
+  from 1 song — without spending hours in an editor." This beats vague
+  curiosity bait on conversions even when it pulls fewer raw views.
+- **Open already in motion.** Drop-off data shows viewers leaving at 0:02,
+  before the first voiceover line even lands. No static shot settling into
+  frame, no fade-in. Something is moving, cutting or popping before 2s.
+- **Rotate the CTA.** Don't run "Comment VIDEO" every time. Resource-unlock
+  style CTAs are worth testing too.
+
+For artist-facing lessons, teach two things together: the technical mechanics
+(clarity, context, curiosity) *and* that the song itself has to solve a problem
+or hit an emotion. No visual system fixes a song that doesn't connect.
+
+## Production order
+
+Follow this order. Each step depends on the one before it, and skipping to
+animation prompts is the specific failure this pipeline exists to prevent.
+
+1. Write the voiceover script as one continuous read.
+2. Break it into visual beats — `references/storyboard.md`.
+3. Match each phrase to a specific visual action.
+4. Organise the beats into four rows of three.
+5. Write one detailed 12-panel storyboard prompt.
+6. Generate the storyboard image — **and show Makari for approval before
+   animating anything.** This gate is not optional; he asked for it directly.
+7. Generate the voiceover as a single ElevenLabs generation, then measure and
+   split it — `references/voiceover.md`.
+8. Write one animation prompt per row — `references/animation.md`.
+9. Animate each row as a separate full-screen clip, sized to its span.
+10. Assemble — `references/assembly.md`. Live speech only on the final CTA.
+
+Asset naming and where files live: `references/assets.md`.
+
+## Never name anyone in a prompt
+
+No artist name, stage name, brand name or character name in any Flow prompt,
+image or video. Describe the subject as `the person in the first attached
+reference image` and let the attached reference carry identity. Flow may reject
+a generation outright when a name is present, even with the right reference
+attached.
+
+The only exception is text that must literally appear on screen — put that in
+quotation marks and say where it appears.
+
+## Attach the character chip first
+
+Every time, for images and video both: `@me` **first**, then the storyboard or
+panel image. Attaching the style image first silently prevents the character
+chip from binding and Flow generates a stranger. This reproduces reliably — it
+is an ordering bug, not a model limitation.
+
+Steps 6 and 7 can run in either order, but both must be done before any
+animation prompt is written — the storyboard decides *what* happens and the
+voiceover timings decide *how long* each row has to do it.
+
+## The locked look
+
+**Host.** Tag **`@me`** for the avatar. It's account-level so it works in any
+project, unlike a character asset which is scoped to the project it was built
+in.
+
+**Wardrobe — paste this block verbatim into every prompt.** Not a paraphrase,
+not a shortened version, and not "as established above." Sleeve length drifts
+between clips in the same set when the description is loose — one batch came
+back mixing short and long sleeves, which cannot be fixed in the edit.
+
+> He wears a fitted solid black short-sleeve crew-neck t-shirt with the sleeves
+> ending at mid-bicep, and two layered gold Cuban-link chains, a shorter one
+> sitting at the collarbone and a longer one hanging below it. The shirt must
+> stay short-sleeve for the entire clip, never long-sleeve, never a jacket,
+> never a hoodie, and both chains must stay identical throughout with no change
+> in length or count.
+
+Change shirt colour by editing the colour word in that block, never by editing
+a saved asset. Keep the gold chains regardless — they're part of the brand read.
+Anything else that must match across a set gets the same treatment: spelled out
+in full, in every prompt.
+
+**Studio.** Dark premium home music-production studio, studio monitors and MIDI
+keyboard, acoustic panels, **warm gold accent lighting and soft haze**,
+cinematic realistic lighting, shallow depth of field.
+
+**No blue or cyan anywhere.** An earlier version of this look used electric
+blue and cyan LED accents with purple haze; it was rejected. Say "no blue or
+cyan tones anywhere" in the prompt explicitly — the model reaches for cyan on
+its own for anything tech-flavoured.
+
+**Graphics live inside the phone.** A real smartphone held toward camera with
+realistic app-style screens — rounded interface panels, natural shadows, clean
+typography, realistic reflections, generic platform icons rather than
+copyrighted logos. This replaced an earlier floating-hologram look that tested
+worse. No holograms, no fantasy screens in the air, no cartoon UI, no random
+glowing icons.
+
+**Movement.** Camera punch-ins, phone close-ups, over-the-shoulder angles.
+
+## Voiceover — one continuous read
+
+elevenlabs.io → Text to Speech. Voice **Atg Mkari**, model **Eleven
+Multilingual v2**. Roughly **17.6 characters per second** for estimating length.
+
+**Generate the whole script as a single generation. Do not chunk it.** Chunked
+audio butted together has audible seams and slightly wrong rhythm at every
+join; one continuous read keeps the breath and pacing natural the whole way
+through. Leave the CTA line out — that comes from the Flow clip itself, so you
+see and hear him say it.
+
+Because the audio is continuous, row boundaries come from *inside* it rather
+than from file lengths. Find them by measuring, never by estimating from
+character counts:
+
+```bash
+python3 scripts/assemble.py --timings VO_full.mp3          # needs faster-whisper
+ffmpeg -i VO_full.mp3 -af "silencedetect=noise=-30dB:d=0.15" -f null -   # always works
+```
+
+Cut at the midpoint of each detected pause and verify every segment starts in
+true silence before building. Full procedure in `references/voiceover.md`.
+
+Those timestamps become each row's `end` in the build config, and the row clip
+is trimmed to its own span.
+
+This is also the moment the storyboard timecodes become real — the beats were
+drafted against the script, and now they get pinned to the actual audio.
+
+## Audio — locked
+
+- **Instrumental** at constant level, **no sidechain ducking**, `volume=0.1237`
+  (−18.2 dB). Trim to the video's full length and let it play all the way
+  through, including under the logo.
+- Voiceover at full level over the top.
+- **Mute everything else** — every teaching clip, the CTA clip's background,
+  and the logo's own bass hit. Flow generates speech audio even on silent
+  clips and it will fight the voiceover.
+- Limiter on the master at 0.95.
+- Targets: speech ≈ −17 dB mean, music-only tail ≈ −32 dB mean, peaks under −2.
+
+**Default new beds to up-tempo trap**, ~140 BPM, generated in Suno with
+Instrumental on. Suno returns two versions — pick one and move on rather than
+asking which. The gospel-trap recipe is the alternate, for explicitly gospel
+content. Both prompts are in `references/assembly.md`.
+
+## Logo outro
+
+`ATG_Logo_Outro.mp4` — trim to **5 seconds**, scale to **105%**, audio muted,
+instrumental continues underneath. No captions over it.
+
+## Captions
+
+Burned in. Poppins Bold 78px, pure white, 6px black outline, no shadow, bottom
+centred 18% up from the frame bottom. Three-word groups with the spoken word
+at full opacity and its neighbours dimmed, small scale pop on each new group.
+
+Word timings come from `faster-whisper` on the voiceover, not from guessing:
+
+```bash
+pip install --break-system-packages faster-whisper
+```
+
+Force the comment keyword to uppercase afterwards — Whisper lowercases it.
+
+## Assembly
+
+`scripts/assemble.py` takes a JSON config and does the whole build: trims each
+row clip to its voiceover chunk, mixes at constant level, transcribes for word
+timings, builds the caption file and burns it in. Read the script header for
+the config shape. `references/assembly.md` has the raw ffmpeg if you need to
+debug.
+
+Use ffmpeg, not CapCut — CapCut froze in production when a background Siri
+window took modal focus over the import dialog, and ffmpeg gives frame-exact
+trims a timeline drag can't.
+
+## Verify before delivering
+
+- Something is moving before the 2-second mark
+- Mouth closed on every teaching clip
+- Same man, same wardrobe, same studio, same phone in every clip
+- Phone screen text is readable and says what it's supposed to
+- No storyboard grid, panel borders or white gaps visible in any clip
+- Hands look right — no extra or warped fingers
+- Cuts land on sentence boundaries
+- CTA delivers its line once (Flow repeats lines to pad — see
+  `references/flow.md`)
+- No captions over the logo
+- Export 720x1280 or 1080x1920, 24fps, H.264, `-movflags +faststart`
+
+Pull frames at several timestamps and actually look at them. Nearly every
+failure in this pipeline is visual and silent — a drifted face, an unreadable
+screen, a visible panel border. Nothing in any log will tell you.
