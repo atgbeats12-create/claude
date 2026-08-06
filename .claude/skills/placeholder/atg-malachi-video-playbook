@@ -1,0 +1,156 @@
+---
+name: atg-malachi-video-playbook
+description: "Production playbook for the Atg Malachi channel's vertical song/lyric videos (Christian hip-hop/trap, \"Chosen In The Fire\" album). Covers generating Clip1 + Clip2 in Google Flow with captions baked directly into the generation prompt, assembling with the reusable Outro asset, merging in chorus-trimmed audio as the final step, compressing the result for upload, and publishing to YouTube via Blotato with a hook-driven SEO title/description. Use this any time Makari asks to \"make the next video,\" \"make a video for [song],\" build or finish or publish a Malachi song video, or mentions Clip1/Clip2/Outro, chorus-trimmed audio, or Chosen In The Fire visuals — even if he doesn't name Google Flow, ffmpeg, or Blotato directly. Always check this before touching Google Flow or Blotato for the Atg Malachi channel — it encodes exact ffmpeg commands, file-size workarounds, and publishing settings that are easy to get wrong from scratch, and were only worked out through trial and error."
+---
+
+# Atg Malachi Video Playbook
+
+Atg Malachi is a Christian hip-hop/trap music channel built around the "Chosen In The Fire" album. Each song gets a 30-second-ish vertical video: two AI-generated performance clips with captions baked in, a reusable outro, and the song's chorus laid under the whole thing. This playbook is the exact pipeline that produced the reference video, "Crown in the Furnace" — follow it as the default for every new song unless Makari says otherwise.
+
+## Reference example
+
+`Crown_in_the_Furnace_FINAL_WithAudio.mp4` in the ATG Malachi Visuals folder is the finished template for this format: 720x1280, 24fps, h264, three 10-second segments stitched together, chorus audio under the whole thing. When in doubt about what "done" looks like, that file is the answer.
+
+## Pipeline overview
+0: Lock the character in Flow (do this before every new song only if not already built
+1. Generate Clip1 and Clip2 in Google Flow (captions baked in)
+2. Reuse the existing Outro asset
+3. Get a chorus-trimmed version of the song's audio
+4. Stitch Clip1 + Clip2 + Outro into one silent video
+5. Merge the chorus-trimmed audio in — **always the last step**
+6. Compress the result for upload
+7. Publish to YouTube via Blotato
+Step 0: Lock the character in Flow (do this before every new song only if not already built)
+
+Right now this playbook jumps straight to generating Clip1/Clip2 with no
+character-lock step. That's the gap that causes the most expensive kind of
+mistake: Flow silently generates a different-looking man and gives no error —
+`customer-lyric-video` calls this "the single hardest part of this job" for
+exactly that reason, and the same risk applies here.
+
+1. **Build (or confirm) a Malachi character asset** in the Flow project —
+   same pattern as Mkari's locked `"Mkari Studio Look (all black)"` asset.
+   Reference photos already exist in Downloads (`Malachi_delivering_to_camera_2K...`,
+   `Malachi_in_performance_look_2K...`, `Malachi_performing_at_stadium_2K...`,
+   `Malachi_with_vintage_microphone...`, etc.) — use these to build it once,
+   then reuse the saved asset for every future song rather than re-describing
+   the look from scratch each time.
+2. **Fill in Character Info explicitly** — positive description plus the 2-3
+   drift failures to rule out (phrased as negatives), the same shape as
+   Mkari's Character Info field. Leaving this blank is the main reason Flow
+   drifts between clips.
+3. **Attach the character chip first, then the reference photo**, both via
+   `@` in the prompt box — order matters, adding the photo first makes the
+   character tag silently fail to attach. Keep Agent mode off.
+4. **Stills before video.** Generate each new look/scene as a still first
+   (Image mode, x4, 0 credits) and check the face before spending video
+   credits on Clip1/Clip2. Only move to video once Malachi is recognizably
+   himself.
+
+If a character asset already exists for Malachi from a prior song, just
+confirm it's tagged in the new prompts — this step only needs the full build
+once.
+
+## 2. New line under "Step 7: Publish to YouTube via Blotato", point 3
+
+After "Don't force keywords or controversy that don't fit the song," add:
+
+> Pull actual hook phrasing from `ATG_Content_System_Hook_Bank.md`'s ATG
+> Malachi section (struggle→freedom, reveal/reaction, exclusive/call-out
+> formulas) rather than inventing a hook fresh each time — it's already
+> tuned to this channel's testimony/street-to-faith voice.
+
+## 3. Open question — not a patch, flag for Makari directly
+
+Mkari's playbook has a full Blotato account-ID table across YouTube,
+Facebook, Instagram, Threads, TikTok, and Twitter. This playbook only
+documents YouTube publishing for Malachi. Confirm whether that's intentional
+(YouTube-only channel for now) or whether Malachi should also be publishing
+to IG/TikTok/FB — if so, add the same account-ID table here once those
+accounts exist in Blotato.
+
+## Step 1: Generate Clip1 + Clip2 in Google Flow
+
+Captions are **not** overlaid afterward with ffmpeg — Makari wants them baked directly into the Google Flow generation. When writing the Flow prompt for each clip, include the exact on-screen caption line as part of the scene description (bold white sans-serif, black outline, centered in the lower third — this is what Flow already renders when asked for on-screen text). Pick one short, punchy lyric or theme line per clip that reflects that clip's beat in the song (e.g. Clip1 = struggle/before, Clip2 = triumph/after — see `Clip1_Struggle.mp4` / `Clip2_Triumph.mp4` naming).
+
+Specs to match:
+- 720x1280 (9:16 vertical), h264, 24fps
+- Clip length varies by song — size Clip1 and Clip2 so that Clip1 + Clip2 + Outro roughly equals the length of the chorus-trimmed audio clip you'll use in Step 5. Don't force every video to exactly 30 seconds; let the chorus length drive it.
+
+Name the files descriptively, e.g. `Clip1_<Theme>.mp4`, `Clip2_<Theme>.mp4`, matching the pattern already used for Crown in the Furnace.
+
+## Step 2: Reuse the Outro asset
+
+`Outro.mp4` in the ATG Malachi Visuals folder is a fixed, reusable brand asset (currently 720x1280, 24fps, ~10s) — don't regenerate it per song. Just confirm it's still present before assembling.
+
+## Step 3: Get chorus-trimmed audio
+
+The song's raw Suno export (e.g. `<Song Name>.mp3`) is the full track. For the video you need a **chorus-trimmed** cut — a shorter clip that starts at the chorus/hook, saved alongside it as `<Song Name> (Starts at Chorus).mp3`. Trim this before the final merge step; it should be roughly the same length as Clip1 + Clip2 + Outro combined.
+
+## Step 4: Stitch Clip1 + Clip2 + Outro
+
+Since all three segments share codec/resolution/framerate, use the concat demuxer (fast, no re-encode):
+
+```bash
+cat > filelist.txt <<EOF
+file 'Clip1_<Theme>.mp4'
+file 'Clip2_<Theme>.mp4'
+file 'Outro.mp4'
+EOF
+ffmpeg -y -f concat -safe 0 -i filelist.txt -c copy "<Song Name>_FINAL.mp4"
+```
+
+If ffmpeg complains about mismatched codec parameters between segments, fall back to re-encoding instead of `-c copy`:
+```bash
+ffmpeg -y -f concat -safe 0 -i filelist.txt -c:v libx264 -pix_fmt yuv420p -r 24 "<Song Name>_FINAL.mp4"
+```
+
+## Step 5: Merge in the chorus-trimmed audio (final step)
+
+This is always the last edit made to the video — confirmed working pattern:
+
+```bash
+ffmpeg -y -i "<Song Name>_FINAL.mp4" -i "<Song Name> (Starts at Chorus).mp3" \
+  -map 0:v -map 1:a -c:v copy -c:a aac -b:a 192k -shortest \
+  "<Song Name>_FINAL_WithAudio.mp4"
+```
+
+`-shortest` trims to whichever of video/audio is shorter, so it's forgiving if Step 3's trim isn't frame-perfect. This `_FINAL_WithAudio.mp4` file is the actual deliverable — save it in the ATG Malachi Visuals folder.
+
+## Step 6: Compress for upload
+
+Anything uploaded through the Chrome extension's `file_upload` tool is capped at 10MB combined, and the raw merged video usually comes in well over that. Re-encode a smaller copy specifically for upload — don't touch the original:
+
+```bash
+ffmpeg -y -i "<Song Name>_FINAL_WithAudio.mp4" \
+  -c:v libx264 -b:v 2000k -maxrate 2200k -bufsize 4000k -preset medium -pix_fmt yuv420p \
+  -c:a aac -b:a 128k \
+  "<Song Name>_FINAL_ForUpload.mp4"
+```
+
+This got Crown in the Furnace from ~15MB down to ~8MB with no visible quality loss. If the source is unusually long/large, lower `-b:v` further rather than skipping compression.
+
+## Step 7: Publish to YouTube via Blotato
+
+Blotato's own upload API rejects direct file PUTs from this sandbox (network-blocked), and Blotato's `create_post` API has no fields for tags/category/custom thumbnail. So: drive Blotato's **web UI** through the browser, not the raw API.
+
+1. Copy the `_FINAL_ForUpload.mp4` file into the outputs scratchpad path before calling `file_upload` — the mounted ATG Malachi Visuals folder is not on the Chrome extension's accepted-source allowlist, but the scratchpad is. Uploading straight from the project folder will silently fail with "Claude in Chrome is not connected."
+2. If a description field gets corrupted mid-type (text lands in the wrong spot), click into the field, Cmd+A, Delete, and retype clean rather than trying to patch it.
+3. Title/description: write a hook-driven, SEO-optimized title and description with a controversial or provocative angle — the kind of framing that makes someone stop scrolling and argue in the comments (a bold claim, a callout, an "unpopular opinion" framing, etc.), while staying true to the song's actual theme. Don't force keywords or controversy that don't fit the song. **Do not link to Suno.**
+4. **Always link the related long-form video** in the description — every short/vertical Malachi video corresponds to a long-form YouTube upload, and the description must point there (plain URL or "Full song ⬇" style callout). If that long-form video hasn't been published yet, publish or locate it first rather than skipping the link — don't treat it as optional the way a Spotify/Apple link is.
+5. Settings to confirm before publishing (ask Makari if any of these differ from the defaults below):
+   - Privacy: Public
+   - Notify subscribers: Yes
+   - Playlist: add to the "Chosen In The Fire 🔥" playlist
+   - Channel/account: "Malachi (Atg Malachi)"
+
+## Known gotchas
+
+- **Suno tab hangs**: a long-lived Suno.com tab will eventually start throwing "Script injection timed out" / stuck document_idle errors after several interactions. Don't fight it — open a fresh tab and re-navigate; this reliably clears it.
+- **Suno download menu**: on the song page, "..." → "Download" → "MP3 Audio" gets the audio (WAV/Stems/Video are Pro-gated). The small circular icon next to "Edit" downloads the cover image, not audio — don't confuse the two.
+- **file_upload source folder**: only accepts files from certain shared locations (the outputs scratchpad works; the mounted project folder does not), regardless of file size. Always stage the upload file in the scratchpad first.
+- **Direct bash curl/API calls** to Blotato or Google's OAuth endpoints are blocked by the sandbox network proxy — anything hitting those domains has to go through the real browser instead.
+
+## Where things live
+
+All source and finished assets live in the ATG Malachi Visuals folder: raw song MP3s, `Lyrics - <Song>.txt` files, `Clip1_*`/`Clip2_*`/`Outro.mp4`, and the `_FINAL`/`_FINAL_WithAudio`/`_FINAL_ForUpload` outputs per song. If direct YouTube Data API access is ever needed (tags, category, custom thumbnail, editing an already-published video), the OAuth credentials are saved in `YouTube API Credentials (KEEP PRIVATE).txt` in that same folder — mint access tokens through the browser (OAuth Playground), not bash, since `oauth2.googleapis.com` is also proxy-blocked.
